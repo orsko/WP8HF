@@ -122,70 +122,70 @@
     <comment>Controls the FlowDirection for all elements in the RootFrame. Set to the traditional direction of this resource file's language</comment>
   </data>
   <data name="ResourceLanguage" xml:space="preserve">
-    <value>en-US</value>
+    <value>hu</value>
     <comment>Controls the Language and ensures that the font for all elements in the RootFrame aligns with the app's language. Set to the language code of this resource file's language.</comment>
   </data>
   <data name="ApplicationTitle" xml:space="preserve">
-    <value>global city quiz</value>
+    <value>városismereti vetélkedő</value>
   </data>
   <data name="NewPanoramaTitle" xml:space="preserve">
-    <value>new</value>
+    <value>új</value>
   </data>
   <data name="AllPanoramaTitle" xml:space="preserve">
-    <value>all</value>
+    <value>összes</value>
   </data>
   <data name="AvailablePanoramaTitle" xml:space="preserve">
-    <value>available</value>
+    <value>elérhető</value>
   </data>
   <data name="ConnectionError" xml:space="preserve">
-    <value>Error while connecting to server</value>
+    <value>Hiba a szerverhez kapcsolódáskor</value>
   </data>
   <data name="CorrectAnswer" xml:space="preserve">
-    <value>correct answer</value>
+    <value>helyes válasz</value>
   </data>
   <data name="CurrentPosition" xml:space="preserve">
-    <value>Current Position</value>
+    <value>Jelenlegi pozíció</value>
   </data>
   <data name="FacebookLoginPageTitle" xml:space="preserve">
-    <value>Facebook login</value>
+    <value>Facebook bejelentkezés</value>
   </data>
   <data name="FalseAnswer" xml:space="preserve">
-    <value>false answer</value>
+    <value>hibás válasz</value>
   </data>
   <data name="GpsError" xml:space="preserve">
-    <value>Can't get GPS data...</value>
+    <value>GPS nem elérhető...</value>
   </data>
   <data name="ImagePanoramaTitle" xml:space="preserve">
-    <value>images</value>
+    <value>képek</value>
   </data>
   <data name="LocalLoadError" xml:space="preserve">
-    <value>Error while loading...</value>
+    <value>Hiba adatbetöltés közben...</value>
   </data>
   <data name="LocalSaveError" xml:space="preserve">
-    <value>Error while saving...</value>
+    <value>Hiba mentés közben...</value>
   </data>
   <data name="MapPanoramaTitle" xml:space="preserve">
-    <value>map</value>
+    <value>térkép</value>
   </data>
   <data name="PostError" xml:space="preserve">
-    <value>Error while posting...</value>
+    <value>Hiba post közben...</value>
   </data>
   <data name="PostSuccess" xml:space="preserve">
-    <value>Successful posting!</value>
+    <value>Sikeres post!</value>
   </data>
   <data name="QuestionPageTitle" xml:space="preserve">
-    <value>question</value>
+    <value>kérdés</value>
   </data>
   <data name="QuestionPosition" xml:space="preserve">
-    <value>Question Location. Answer it!</value>
+    <value>Kérdés pozíció. Válaszold meg!</value>
   </data>
   <data name="SampleProperty" xml:space="preserve">
     <value>sample</value>
   </data>
   <data name="Share" xml:space="preserve">
-    <value>Share on Facebook?</value>
+    <value>Megosztod Facebookon?</value>
   </data>
   <data name="ShareText" xml:space="preserve">
-    <value>I've answered the following question: </value>
+    <value>Megválaszoltam a következő kérdést: </value>
   </data>
 </root>

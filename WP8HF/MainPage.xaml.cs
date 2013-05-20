@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Device.Location;
+using System.IO.IsolatedStorage;
 using System.Net;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +10,17 @@ using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Windows.Shapes;
 using Microsoft.Phone.Controls;
+using Microsoft.Phone.Maps.Controls;
 using Microsoft.Phone.Shell;
 using WP8HF.DataModel;
 using System.Runtime.Serialization.Json;
 using System.IO;
+using WP8HF.Resources;
 using Windows.Devices.Geolocation;
 using Windows.Storage;
 using System.Threading.Tasks;
@@ -28,26 +34,26 @@ namespace WP8HF
 
         private int imageId = 0;
 
-        private ObservableCollection<QuestionItem> allQuestions = new ObservableCollection<QuestionItem>();
-        private ObservableCollection<QuestionItem> newQuestions = new ObservableCollection<QuestionItem>();
-        private ObservableCollection<QuestionItem> currentQuestions = new ObservableCollection<QuestionItem>();
+        private static ObservableCollection<QuestionItem> allQuestions = new ObservableCollection<QuestionItem>();
+        private static ObservableCollection<QuestionItem> newQuestions = new ObservableCollection<QuestionItem>();
+        private static ObservableCollection<QuestionItem> currentQuestions = new ObservableCollection<QuestionItem>();
 
         //Minden kérdés
-        public ObservableCollection<QuestionItem> AllQuestions
+        public static ObservableCollection<QuestionItem> AllQuestions
         {
             get { return allQuestions; }
             set { allQuestions = value; }
         }
 
         //Új kérdések
-        public ObservableCollection<QuestionItem> NewQuestions
+        public static ObservableCollection<QuestionItem> NewQuestions
         {
             get { return newQuestions; }
             set { newQuestions = value; }
         }
 
         //Elérhető kérdések
-        public ObservableCollection<QuestionItem> CurrentQuestions
+        public static ObservableCollection<QuestionItem> CurrentQuestions
         {
             get { return currentQuestions; }
             set { currentQuestions = value; }
@@ -59,13 +65,27 @@ namespace WP8HF
         // Adatbázis
         private QuestionList questions = new QuestionList();
 
-        private Geoposition geoposition;
+        public QuestionList MyQuestions
+        {
+            get { return questions; }
+            set { questions = value; }
+        }
 
+        private static Geoposition geoposition;
+
+        public static Geoposition MyGeoposition
+        {
+            get { return geoposition; } 
+            set { geoposition = value; }
+        }
 
         // Constructor
         public MainPage()
         {
             InitializeComponent();
+
+            // Sample code to localize the ApplicationBar
+            BuildLocalizedApplicationBar();
 
             Loaded += MainPage_Loaded;
 
@@ -89,6 +109,7 @@ namespace WP8HF
                 if (start == true)
                 {
                     questions.DeleteDatabase();
+                    questions=new QuestionList();
                     questions.CreateDatabase();
                 }
             }
@@ -126,7 +147,8 @@ namespace WP8HF
                         {
                             reader.Read();
                             var myJson = (MyJSON)serializer.ReadObject(stream);
-                            questions.QuestionItems.InsertOnSubmit(myJson.ToQuestionItem());
+                            QuestionItem item = myJson.ToQuestionItem();
+                            questions.QuestionItems.InsertOnSubmit(item);                           
                         }
                     }
                 }
@@ -134,6 +156,34 @@ namespace WP8HF
                 questions.SubmitChanges();
 
                 GetLocation();
+
+                foreach (var item in questions.QuestionItems)
+                {
+                    var a = item.Position.Split(',');
+                    double lat;
+                    try
+                    {
+                        lat = double.Parse(a[0]);
+                    }
+                    catch
+                    {
+                        a[0] = a[0].Replace('.', ',');
+                        a[1] = a[1].Replace('.', ',');
+                    }
+                    lat = double.Parse(a[0]);
+                    double lon = double.Parse(a[1]);
+                    //a pin kiteveset is itt hivjuk meg
+                    var gc = new GeoCoordinate();
+                    gc.Latitude = lat;
+                    gc.Longitude = lon;
+                    DrawMapMarker(gc, item.QuestionItemId);
+                }
+
+                LoadImages();
+
+                allQuestions.Clear();
+                newQuestions.Clear();
+                currentQuestions.Clear();
 
                 foreach (var x in questions.QuestionItems)
                 {
@@ -150,7 +200,8 @@ namespace WP8HF
             }
             catch
             {
-                MessageBox.Show("Can't connect to server");
+                MessageBox.Show(AppResources.ConnectionError);
+                SystemTray.ProgressIndicator.IsIndeterminate = false;
             }
         }
 
@@ -160,32 +211,99 @@ namespace WP8HF
             var geolocator = new Geolocator();
             geolocator.DesiredAccuracyInMeters = 10;
 
+            
+
             try
             {
                 geoposition = await geolocator.GetGeopositionAsync(
-                    maximumAge: TimeSpan.FromMinutes(5),
+                    maximumAge: TimeSpan.FromSeconds(5),
                     timeout: TimeSpan.FromSeconds(25));
 
-                foreach (var x in questions.QuestionItems)
-                {
-                    var lat = double.Parse(x.Position.Split(',')[0]);
-                    var lon = double.Parse(x.Position.Split(',')[1]);
-
-                    var curLat = geoposition.Coordinate.Latitude;
-                    var curLon = geoposition.Coordinate.Longitude;
-
-                    //Távolság
-                    var delta = Math.Sqrt(Math.Pow(lat - curLat,2) + Math.Pow(lon - curLon,2));
-
-                    if(delta < 0.31)
-                        currentQuestions.Add(x);
-
-                }
+                DrawMap();               
             }
             catch (Exception)
             {
-                MessageBox.Show("Can't get GPS data");
+                MessageBox.Show(AppResources.GpsError);
             }
+        }
+
+        private void DrawMap()
+        {
+            //Térképen saját pozívió bejelölése
+            MapGps.Center = new GeoCoordinate(geoposition.Coordinate.Latitude, geoposition.Coordinate.Longitude);
+
+            //a pin kiteveset is itt hivjuk meg
+            DrawMapMarker(MapGps.Center, 0);
+
+            foreach (var x in questions.QuestionItems)
+            {
+                double lat;
+                double lon;
+                try
+                {
+                    lat = double.Parse(x.Position.Split(',')[0]);
+                    lon = double.Parse(x.Position.Split(',')[1]);
+                }
+                catch
+                {
+                    lat = double.Parse(x.Position.Split(',')[0].Replace('.', ','));
+                    lon = double.Parse(x.Position.Split(',')[1].Replace('.', ','));
+                }
+
+
+                var curLat = geoposition.Coordinate.Latitude;
+                var curLon = geoposition.Coordinate.Longitude;
+
+                //Távolság
+                var delta = Math.Sqrt(Math.Pow(lat - curLat, 2) + Math.Pow(lon - curLon, 2));
+
+                if (delta < 0.31)
+                    currentQuestions.Add(x);
+
+            }
+        }
+
+        //Jel rajzolása
+        private void DrawMapMarker(GeoCoordinate coordinate, int currentQuestionId)
+        {
+            //MapGps.Layers.Clear(); //tobb reteg is lehet a terkepen, ezert ezeket eloszor toroljuk
+            MapLayer mapLayer = new MapLayer();
+
+            Polygon polygon = new Polygon();
+            polygon.Points.Add(new Point(0, 0));
+            polygon.Points.Add(new Point(0, 75));
+            polygon.Points.Add(new Point(25, 0));
+            if (currentQuestionId > 0)
+            {
+                polygon.Fill = new SolidColorBrush(Colors.Yellow);
+                //ha rakattintunk a kis pin-re, akkor messageboxot jelenit meg
+                polygon.MouseLeftButtonUp += polygon_MouseLeftButtonUp;
+            }
+            else
+            {
+                polygon.Fill = new SolidColorBrush(Colors.Blue);
+                //ha rakattintunk a kis pin-re, akkor messageboxot jelenit meg
+                polygon.MouseLeftButtonUp += polygon_MouseLeftButtonUpMe;
+            }
+
+            MapOverlay overlay = new MapOverlay();
+            overlay.Content = polygon;
+            overlay.GeoCoordinate = coordinate;
+            //rateszi a terkepre
+            overlay.PositionOrigin = new Point(0, 1);
+
+            mapLayer.Add(overlay);
+            MapGps.Layers.Add(mapLayer);
+        }
+
+        void polygon_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            MessageBox.Show(AppResources.QuestionPosition);
+        }
+
+        void polygon_MouseLeftButtonUpMe(object sender, MouseButtonEventArgs e)
+        {
+            MessageBox.Show(AppResources.CurrentPosition);
         }
 
         // Load data for the ViewModel Items
@@ -210,11 +328,73 @@ namespace WP8HF
                 throw;
             }
             
-        }       
+        }
+
+        public ObservableCollection<StorageFile> ImageFiles { get; set; }
+        public StorageFile ImgFile { get; set; }
+
+        private async void LoadImages()
+        {
+            //var image = new BitmapImage();
+
+            //var wb = new WriteableBitmap(image);
+
+            // Local Storage-ba mentés
+            try
+            {
+                //képek beolvasása
+                StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
+                var testFiles = await storageFolder.GetFilesAsync();
+                ImgFile = testFiles.First();
+                //ImageFiles = testFiles;
+                ImageFiles=new ObservableCollection<StorageFile>();
+                foreach (var storageFile in testFiles)
+                {
+                    if(storageFile.Path.Contains(".jpg"))
+                        ImageFiles.Add(storageFile);
+                    using (var streamReader = new StreamReader(await storageFile.OpenStreamForReadAsync()))                       
+                    {
+                       // wb.LoadJpeg(streamReader.BaseStream);
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show(AppResources.LocalLoadError);
+            }
+        }
+
+        //Sample code for building a localized ApplicationBar
+        private void BuildLocalizedApplicationBar()
+        {
+            // Set the page's ApplicationBar to a new instance of ApplicationBar.
+            ApplicationBar = new ApplicationBar();
+
+            ApplicationBar.Mode=ApplicationBarMode.Minimized;
+
+            // Create a new button and set the text value to the localized string from AppResources.
+            ApplicationBarIconButton appBarRefreshButton = new ApplicationBarIconButton(new Uri("/Assets/Images/refresh.png", UriKind.Relative));
+            //appBarButton.Text = AppResources.AppBarButtonText;
+            appBarRefreshButton.Text = "refresh";
+            appBarRefreshButton.Click += appBarRefreshButton_Click;
+            ApplicationBar.Buttons.Add(appBarRefreshButton);
+
+        }
+
+        private void appBarRefreshButton_Click(object sender, EventArgs e)
+        {
+            //Hogy újra betöltse az adatbázist
+            start = true;
+            //Pin-ek eltűntetése
+            MapGps.Layers.Clear();
+            //Adatok betöltése
+            LoadDatabase();
+        }
 
         protected override void OnBackKeyPress(CancelEventArgs e)
         {
-            NavigationService.GoBack();
+            IsolatedStorageSettings.ApplicationSettings.Save();
+            Application.Current.Terminate();
         }
     
     }

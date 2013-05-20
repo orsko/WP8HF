@@ -16,6 +16,8 @@ using Microsoft.Phone.Shell;
 using Microsoft.Phone.Tasks;
 using Microsoft.Xna.Framework.Media;
 using WP8HF.DataModel;
+using WP8HF.Resources;
+using Windows.Phone.Speech.Synthesis;
 using Windows.Storage;
 
 namespace WP8HF
@@ -29,6 +31,8 @@ namespace WP8HF
         public string Answer3 { get; set; }
         public string Answer4 { get; set; }
         public string RightAnswer { get; set; }
+
+        public static bool ToPost = false;
 
         public Page1()
         {
@@ -61,6 +65,19 @@ namespace WP8HF
                 Answer3 = question.Answer3;
                 Answer4 = question.Answer4;
                 RightAnswer = question.RightAnswer;
+
+                SayQuestion();
+            }
+        }
+
+        private async void SayQuestion()
+        {
+            var voice = InstalledVoices.Default;
+
+            using (var text2Speech = new SpeechSynthesizer())
+            {
+                text2Speech.SetVoice(voice);
+                await text2Speech.SpeakTextAsync(Question);
             }
         }
 
@@ -81,7 +98,7 @@ namespace WP8HF
             }
             else
             {
-                MessageBox.Show("False!");
+                MessageBox.Show(AppResources.FalseAnswer);
             }
         }
         private void Answer2Click(object sender, RoutedEventArgs e)
@@ -92,7 +109,7 @@ namespace WP8HF
             }
             else
             {
-                MessageBox.Show("False!");
+                MessageBox.Show(AppResources.FalseAnswer);
             }
         }
         private void Answer3Click(object sender, RoutedEventArgs e)
@@ -103,7 +120,7 @@ namespace WP8HF
             }
             else
             {
-                MessageBox.Show("False!");
+                MessageBox.Show(AppResources.FalseAnswer);
             }
         }
         private void Answer4Click(object sender, RoutedEventArgs e)
@@ -114,13 +131,14 @@ namespace WP8HF
             }
             else
             {
-                MessageBox.Show("False!");
+                MessageBox.Show(AppResources.FalseAnswer);
             }
         }
    
         private void GoodAnswer()
         {
-            MessageBoxResult result = MessageBox.Show("Megosztás?", "Correct!", MessageBoxButton.OKCancel);
+            ToPost = true;
+            MessageBoxResult result = MessageBox.Show(AppResources.Share, AppResources.CorrectAnswer, MessageBoxButton.OKCancel);
             if (result == MessageBoxResult.OK)
             {
                 var cameraCaptureTask = new CameraCaptureTask();
@@ -140,6 +158,7 @@ namespace WP8HF
 
         private async void CameraCaptureTaskCompleted(object sender, PhotoResult e)
         {
+            ToPost = false;
             if (e == null)
             {
                 NavigationService.GoBack();
@@ -154,16 +173,16 @@ namespace WP8HF
 
                     var parameters = new Dictionary<string, object>
                         {
-                            {"message", "Sikeresen megválaszoltam ezt a kérdést: " + Question},
+                            {"message", AppResources.ShareText + Question},
                         };
 
                     await client.PostTaskAsync("me/feed", parameters);
-                    MessageBox.Show("Sikerült a posztolás!");
+                    MessageBox.Show(AppResources.PostSuccess);
                     NavigationService.GoBack();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Hiba volt :(");
+                    MessageBox.Show(AppResources.PostError);
                     NavigationService.GoBack();
                 }
             }
@@ -199,14 +218,13 @@ namespace WP8HF
                 fileName = fileName.Replace("/", "_");
                 fileName = fileName.Replace("?", "_");
 
-                /*
-                 * Local Storage-ba mentés
+                
+                // Local Storage-ba mentés
                 try
                 {
                     //ez a mappa ugyanaz mint a GetUserStoreForApplication
                     StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
-                    StorageFile testFile =
-                        await storageFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
+                    StorageFile testFile = await storageFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
 
                     using (var streamWriter = new StreamWriter(await testFile.OpenStreamForWriteAsync()))
                     //innentol ugyanaz mint elobb
@@ -216,10 +234,10 @@ namespace WP8HF
                 }
                 catch
                 {
-                    MessageBox.Show("Error while saving to local.");
+                    MessageBox.Show(AppResources.LocalSaveError);
                 }
-                */
-                /**************************/
+                
+                //Post facebookra
                 var fbUpl = new Facebook.FacebookMediaObject
                     {
                         FileName = fileName,
@@ -244,21 +262,26 @@ namespace WP8HF
 
                     var parameters = new Dictionary<string, object>
                         {
-                            {"message", "Sikeresen megválaszoltam ezt a kérdést: " + Question},
+                            {"message", AppResources.ShareText + Question},
                             {"file", fbUpl},
                         };
 
                     await client.PostTaskAsync("me/photos", parameters);
 
-                    MessageBox.Show("Sikerült a posztolás!");
+                    MessageBox.Show(AppResources.PostSuccess);
                     NavigationService.GoBack();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Hiba volt :(");
+                    MessageBox.Show(AppResources.PostError);
                     NavigationService.GoBack();
                 }
             }
+        }
+        protected override void OnBackKeyPress(CancelEventArgs e)
+        {
+            NavigationService.GoBack();
+            base.OnBackKeyPress(e);
         }
     }
 }

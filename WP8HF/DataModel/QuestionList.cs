@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WP8HF.DataModel
 {
-    class QuestionList : DataContext
+    public class QuestionList : DataContext
     {
         public static string DbConnStr = "Data Source=isostore:/questions.sdf";
 

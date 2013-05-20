@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Device.Location;
 using System.Linq;
 using System.Diagnostics;
 using System.Resources;
@@ -8,8 +10,10 @@ using System.Windows.Markup;
 using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
+using WP8HF.DataModel;
 using WP8HF.Resources;
 using WP8HF.ViewModels;
+using Windows.Devices.Geolocation;
 
 namespace WP8HF
 {
@@ -88,18 +92,63 @@ namespace WP8HF
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
+
             // Ensure that application state is restored appropriately
             if (!App.ViewModel.IsDataLoaded)
             {
                 App.ViewModel.LoadData();
             }
+
+            //Ha csak dormant volt
+            if (e.IsApplicationInstancePreserved || Page1.ToPost)
+            {
+                return;
+            }
+
+            // Check to see if the key for the application state data is in the State dictionary.
+            if (PhoneApplicationService.Current.State.ContainsKey("AllQuestions"))
+            {
+                // If it exists, assign the data to the application member variable.
+                MainPage.AllQuestions = PhoneApplicationService.Current.State["AllQuestions"] as ObservableCollection<QuestionItem>;
+            }
+
+            // Check to see if the key for the application state data is in the State dictionary.
+            if (PhoneApplicationService.Current.State.ContainsKey("NewQuestions"))
+            {
+                // If it exists, assign the data to the application member variable.
+                MainPage.NewQuestions = PhoneApplicationService.Current.State["NewQuestions"] as ObservableCollection<QuestionItem>;
+            }
+
+            // Check to see if the key for the application state data is in the State dictionary.
+            if (PhoneApplicationService.Current.State.ContainsKey("CurrentQuestions"))
+            {
+                // If it exists, assign the data to the application member variable.
+                MainPage.CurrentQuestions = PhoneApplicationService.Current.State["CurrentQuestions"] as ObservableCollection<QuestionItem>;
+            }
+
+
+
+            // Check to see if the key for the application state data is in the State dictionary.
+            if (PhoneApplicationService.Current.State.ContainsKey("Geoposition"))
+            {
+                // If it exists, assign the data to the application member variable.
+                MainPage.MyGeoposition = PhoneApplicationService.Current.State["Geoposition"] as Geoposition;                
+            }
         }
 
         // Code to execute when the application is deactivated (sent to background)
-        // This code will not execute when the application is closing
+        // This code will not execute when the application is closing.
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
-            // Ensure that required application state is persisted here.
+            // If there is data in the application member variable...
+            if (!Page1.ToPost)
+            {
+                // Store it in the State dictionary.
+                PhoneApplicationService.Current.State["AllQuestions"] = MainPage.AllQuestions;
+                PhoneApplicationService.Current.State["NewQuestions"] = MainPage.NewQuestions;
+                PhoneApplicationService.Current.State["CurrentQuestions"] = MainPage.CurrentQuestions;
+                PhoneApplicationService.Current.State["Geoposition"] = MainPage.MyGeoposition;
+            }
         }
 
         // Code to execute when the application is closing (eg, user hit Back)
