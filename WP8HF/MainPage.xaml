@@ -52,6 +52,18 @@
                         <DataTemplate>
                             <Grid Margin="12,0,0,38">
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="{Binding Path=LocalizedResources.AvailablePanoramaTitle, Source={StaticResource LocalizedStrings}}"
+                                           Style="{StaticResource PanoramaItemHeaderTextStyle}"
+                                           Grid.Row="0"></TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                        <!--
+                        <DataTemplate>
+                            <Grid Margin="12,0,0,38">
+                                <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
@@ -60,6 +72,7 @@
                                            Grid.Row="0"/>
                             </Grid>
                         </DataTemplate>
+                        -->
                     </phone:LongListSelector.ListHeaderTemplate>
                     <phone:LongListSelector.ItemTemplate>
                         <DataTemplate>

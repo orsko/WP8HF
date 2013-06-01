@@ -14,8 +14,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Maps.Controls;
+using Microsoft.Phone.Maps.Services;
 using Microsoft.Phone.Shell;
 using WP8HF.DataModel;
 using System.Runtime.Serialization.Json;
@@ -298,14 +300,52 @@ namespace WP8HF
 
         void polygon_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            
             MessageBox.Show(AppResources.QuestionPosition);
         }
 
+        
+
         void polygon_MouseLeftButtonUpMe(object sender, MouseButtonEventArgs e)
-        {
+        {           
             MessageBox.Show(AppResources.CurrentPosition);
         }
 
+        void getWeatherInfo()
+        {
+            var Mygeocodequery = new ReverseGeocodeQuery();
+            Mygeocodequery.GeoCoordinate = new GeoCoordinate(geoposition.Coordinate.Latitude,geoposition.Coordinate.Longitude);
+            Mygeocodequery.QueryCompleted += Mygeocodequery_QueryCompleted;
+            //elnditjuk asynchron modon. a befejezesrol ertesul az alkalmazas
+            Mygeocodequery.QueryAsync();            
+        }
+
+        void Mygeocodequery_QueryCompleted(object sender, QueryCompletedEventArgs<IList<MapLocation>> e)
+        {
+            if (e.Error != null)
+            {
+                return;
+            }
+            var client = new GlobalWeatherServiceReference.GlobalWeatherSoapClient();
+            var adr = e.Result.FirstOrDefault().Information.Address;
+            client.GetWeatherAsync(adr.City, adr.County);
+            client.GetWeatherCompleted += client_GetWeatherCompleted;
+        }
+
+        void client_GetWeatherCompleted(object sender, GlobalWeatherServiceReference.GetWeatherCompletedEventArgs e)
+        {
+            if (e.Error != null)
+                return;
+            
+            XDocument doc = XDocument .Parse(e.Result);
+
+            var one = from l in doc.Descendants("Temperature")
+                      select l;
+
+            var s = one.FirstOrDefault().Value;
+
+            MessageBox.Show(AppResources.TemperatureText + " : " + s);
+        }
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -379,6 +419,18 @@ namespace WP8HF
             appBarRefreshButton.Click += appBarRefreshButton_Click;
             ApplicationBar.Buttons.Add(appBarRefreshButton);
 
+            // Create a new button and set the text value to the localized string from AppResources.
+            ApplicationBarIconButton appBarWeatherButton = new ApplicationBarIconButton(new Uri("/Assets/Images/questionmark.png", UriKind.Relative));
+            //appBarButton.Text = AppResources.AppBarButtonText;
+            appBarWeatherButton.Text = "weather";
+            appBarWeatherButton.Click += appBarWeatherButton_Click;
+            ApplicationBar.Buttons.Add(appBarWeatherButton);           
+
+        }
+
+        void appBarWeatherButton_Click(object sender, EventArgs e)
+        {
+            getWeatherInfo();
         }
 
         private void appBarRefreshButton_Click(object sender, EventArgs e)

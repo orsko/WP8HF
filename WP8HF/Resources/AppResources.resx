@@ -188,4 +188,7 @@
   <data name="ShareText" xml:space="preserve">
     <value>I've answered the following question: </value>
   </data>
+  <data name="TemperatureText" xml:space="preserve">
+    <value>Current temperature</value>
+  </data>
 </root>

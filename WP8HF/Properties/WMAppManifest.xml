@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Deployment xmlns="http://schemas.microsoft.com/windowsphone/2012/deployment" AppPlatformVersion="8.0">
-  <DefaultLanguage xmlns="" code="en-US" />
+  <DefaultLanguage xmlns="" code="en" />
   <Languages xmlns="">
-    <Language code="de" />
     <Language code="hu" />
+    <Language code="en" />
   </Languages>
-  <App xmlns="" ProductID="{dfd4e50a-b1a3-415a-be5e-b31307bd20b3}" Title="WP8HF" RuntimeType="Silverlight" Version="1.0.0.0" Genre="apps.normal" Author="WP8HF author" Description="Sample description" Publisher="WP8HF" PublisherID="{7cdfd0eb-eed4-453e-913f-e776ad8cdad7}">
-    <IconPath IsRelative="true" IsResource="false">Assets\ApplicationIcon.png</IconPath>
+  <App xmlns="" ProductID="{dfd4e50a-b1a3-415a-be5e-b31307bd20b3}" Title="global city quiz" RuntimeType="Silverlight" Version="1.1.0.0" Genre="apps.normal" Author="Örs Kovács" Description="So here it is! The new city quiz for everyone in the world. Questions around the world based on your position. Come on, try it!&#xD;&#xA;&#xD;&#xA;Currently available cities: Budapest (HUNGARY), New York (USA)" Publisher="Örs Kovács" PublisherID="{7cdfd0eb-eed4-453e-913f-e776ad8cdad7}">
+    <IconPath IsRelative="true" IsResource="false">logo.png</IconPath>
     <Capabilities>
       <Capability Name="ID_CAP_NETWORKING" />
       <Capability Name="ID_CAP_MEDIALIB_AUDIO" />
@@ -23,17 +23,26 @@
     </Tasks>
     <Tokens>
       <PrimaryToken TokenID="WP8HFToken" TaskName="_default">
-        <TemplateFlip>
-          <SmallImageURI IsRelative="true" IsResource="false">Assets\Tiles\FlipCycleTileSmall.png</SmallImageURI>
+        <TemplateIconic>
+          <SmallImageURI IsRelative="true" IsResource="false">logo1.png</SmallImageURI>
           <Count>0</Count>
-          <BackgroundImageURI IsRelative="true" IsResource="false">Assets\Tiles\FlipCycleTileMedium.png</BackgroundImageURI>
-          <Title>WP8HF</Title>
-          <BackContent></BackContent>
-          <BackBackgroundImageURI></BackBackgroundImageURI>
-          <BackTitle></BackTitle>
-          <DeviceLockImageURI></DeviceLockImageURI>
-          <HasLarge></HasLarge>
-        </TemplateFlip>
+          <IconImageURI IsRelative="true" IsResource="false">logo2.png</IconImageURI>
+          <Title>
+          </Title>
+          <Message>
+          </Message>
+          <BackgroundColor>
+          </BackgroundColor>
+          <HasLarge>false</HasLarge>
+          <LargeContent1>
+          </LargeContent1>
+          <LargeContent2>
+          </LargeContent2>
+          <LargeContent3>
+          </LargeContent3>
+          <DeviceLockImageURI IsRelative="true" IsResource="false">
+          </DeviceLockImageURI>
+        </TemplateIconic>
       </PrimaryToken>
     </Tokens>
     <ScreenResolutions>

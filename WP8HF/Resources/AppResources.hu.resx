@@ -188,4 +188,7 @@
   <data name="ShareText" xml:space="preserve">
     <value>Megválaszoltam a következő kérdést: </value>
   </data>
+  <data name="TemperatureText" xml:space="preserve">
+    <value>Jelenlegi hőmérséklet</value>
+  </data>
 </root>

@@ -266,5 +266,14 @@ namespace WP8HF.Resources {
                 return ResourceManager.GetString("ShareText", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current temperature.
+        /// </summary>
+        public static string TemperatureText {
+            get {
+                return ResourceManager.GetString("TemperatureText", resourceCulture);
+            }
+        }
     }
 }
